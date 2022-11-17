@@ -6,6 +6,7 @@ CREATE TABLE IF NOT EXISTS cliente(
     email varchar(50),
     contrasenia varchar(50),
     telefono int,
+    edad int,
     direccionid int
 );
 
@@ -46,6 +47,7 @@ CREATE TABLE IF NOT EXISTS producto(
     precio double precision,
     material varchar(100),
     stock bigint,
+    marca varchar(50),
     imagen varchar(50)
 );
 
