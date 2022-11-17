@@ -1,6 +1,6 @@
 -- Creacion de las tablas
 
-CREATE TABLE IF NOT EXISTS cliente(
+CREATE TABLE IF NOT EXISTS cliente (
     id int,
     dni varchar(12),
     nombres varchar(50),
@@ -92,7 +92,7 @@ CREATE TABLE IF NOT EXISTS contieneP(
     subtotal double precision
 );
 
--- Restrincciones
+-- Restricciones
 
 -- Primary keys
 ALTER TABLE cliente ADD CONSTRAINT pk_cliente PRIMARY KEY  (id);
