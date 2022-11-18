@@ -1,7 +1,9 @@
 import psycopg2
 import random as rd
 import names
-import datetime
+import datetime 
+import radar
+from faker import Faker
 from functions import *
 
 conn = psycopg2.connect (
@@ -15,17 +17,17 @@ conn = psycopg2.connect (
 
 cursor = conn.cursor()
 conn.autocommit = True
+faker = Faker()
 
-ids = rd.sample([x for x in range(100000, 999999)], 1000)
-dnis = rd.sample([x for x in range(10000000, 99999999)], 1000)
-
+#-----------------------------------------------------------------------
 def insert_into_table_cliente(n):
+    ids = rd.sample([x for x in range(100000, 999999)], 1000)
+    dnis = rd.sample([x for x in range(10000000, 99999999)], 1000)
+    cursor.execute("SELECT id FROM ubicacion;")
+    ids_ubicacion = cursor.fetchall()
     i = 0
     while (i < n):
         try:
-            cursor.execute("SELECT id FROM ubicacion;")
-            ids_ubicacion = cursor.fetchall()
-
             id = ids[i]
             dni = str(dnis[i])
             nombre = names.get_first_name()
@@ -40,31 +42,51 @@ def insert_into_table_cliente(n):
         except Exception as e:
             print(e, i)
 
+#-----------------------------------------------
 def insert_into_table_pedido(n):
+    cursor.execute("SELECT id FROM cliente;")
+    ids_cliente = cursor.fetchall()
+    codigos = rd.sample([x for x in range(10000000, 99999999)], 1000)
     i = 0
     while (i < n):
         try:
-            cursor.execute("SELECT id FROM cliente;")
-            ids_cliente = cursor.fetchall()
-            codigo =  
-
-
-
+            codigo = str(codigos[i])
+            costo_envio = float(0)
+            direccion_envio = ' '.join([x.replace('\n', ' ') for x in faker.address().split(' ')])
+            impuesto_total = float(0)            
+            fecha = str(radar.random_datetime(start = datetime.date(year=2019, month=5, day=24), stop = datetime.date(year=2022, month=11, day=18)))
+            forma_pago = rd.choice(['Yape', 'Plin', 'Visa', 'MasterCard', 'Efectivo', 'PayPal', 'Payoneer'])
+            monto_total = float(0) 
+            # crear un tigger que calcule la suma de todos los subtotales de cada producto que pertenezca a un pedido
+            fecha_entrega = str(radar.random_datetime(start = datetime.date.fromisoformat(fecha), stop = datetime.date(year=2022, month=11, day=28)))
+            descuento_total = float(0)
+            clienteid = int(rd.choice(ids_cliente)[0]) 
+            cursor.execute(f"INSERT INTO pedido (codigo, costo_envio, direccion_envio, impuesto_total, fecha, forma_pago, monto_total, fecha_entrega, descuento_total, clienteid) VALUES ('{codigo}', {costo_envio}, '{direccion_envio}', {impuesto_total}, '{fecha}', '{forma_pago}', {monto_total}, '{fecha_entrega}', {descuento_total}, {clienteid});")
+            i += 1
         except Exception as e:
             print(e, i)
 
+def update_table_pedido():
+    # antes de actualizar la tabla pedido, se tiene que insetar las tuplas en la tabla contieneP
+    # el triggers actualiza el monto total
+    cursor.execute("SELECT codigo FROM pedido;")
+    codigos_pedido = cursor.fetchall()
+    i = 0
+    while (i < len(codigos_pedido)):
+        try:
+            cursor.execute(f"SELECT monto_total FROM pedido WHERE codigo = {codigos_pedido[i]};")
+            monto_total = float(cursor.fetchone())
+            if (monto_total > 0):
+                # crear un tigger que calcule eso - la suma de todos los costos* cantidad de cada producto y descuente el monto total
+                costo_envio = monto_total * rd.uniform(0.05, 0.2)
+                impuesto_total = monto_total * rd.uniform(0.1, 0.2)           
+                descuento_total = rd.uniform(monto_total * 0.1, monto_total * 0.3)
+                monto_total = monto_total + costo_envio + impuesto_total - descuento_total
+                cursor.execute(f"UPDATE pedido SET monto_total = {monto_total}, costo_envio = {costo_envio}, impuesto_total = {impuesto_total}, descuento_total = {descuento_total} WHERE codigo = '{codigos_pedido[i]}';")
+            else:
+                cursor.execute(f"DELETE FROM pedido WHERE codigo ='{codigos_pedido[i]}';")
+            i += 1
+        except Exception as e:
+            print(e, i)
 
-#insert_in_table_cliente(1000)
-
-CREATE TABLE IF NOT EXISTS pedido (
-    codigo VARCHAR(12), --pk
-    costo_envio DOUBLE PRECISION,
-    direccion_envio VARCHAR(50),
-    impuesto_total DOUBLE PRECISION,
-    fecha DATE,
-    forma_pago VARCHAR(50),
-    monto_total DOUBLE PRECISION,
-    fecha_entrega DATE,
-    descuento_total DOUBLE PRECISION,
-    clienteid INTEGER --fk
-);
+insert_into_table_pedido(1000)

@@ -25,7 +25,7 @@ CREATE TABLE IF NOT EXISTS ubicacion (
 CREATE TABLE IF NOT EXISTS pedido (
     codigo VARCHAR(12), --pk
     costo_envio DOUBLE PRECISION,
-    direccion_envio VARCHAR(50),
+    direccion_envio VARCHAR(80),
     impuesto_total DOUBLE PRECISION,
     fecha DATE,
     forma_pago VARCHAR(50),

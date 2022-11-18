@@ -4,6 +4,7 @@ def insert_into_table_pedido(n):
         try:
             cursor.execute("SELECT id FROM cliente;")
             ids_cliente = cursor.fetchall()
+            
 
         except Exception as e:
             print(e, i)
