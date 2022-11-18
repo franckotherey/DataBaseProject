@@ -6,16 +6,16 @@ SET search_path TO proyecto1k;
 CREATE TABLE IF NOT EXISTS cliente (
     id INTEGER, -- pk
     dni VARCHAR(12),
-    nombres VARCHAR(50),
-    apellidos VARCHAR(50),
+    nombre VARCHAR(50),
+    apellido VARCHAR(50),
     email VARCHAR(50),
     contrasenia VARCHAR(50),
     telefono INTEGER,
     fecha_nacimiento DATE,
-    direccion_id INTEGER --fk
+    ubicacion_id INTEGER --fk
 );
 
-CREATE TABLE IF NOT EXISTS direccion (
+CREATE TABLE IF NOT EXISTS ubicacion (
     id INTEGER, --pk
     pais VARCHAR(50),
     ciudad VARCHAR(50),
@@ -47,13 +47,13 @@ CREATE TABLE IF NOT EXISTS comentarioProducto (
 CREATE TABLE IF NOT EXISTS producto (
     id INTEGER, --pk
     descripcion VARCHAR(100),
-    sku BIGINT,
+    sku VARCHAR(15),
     marca VARCHAR(50),
     talla VARCHAR(25),
     nombre VARCHAR(50),
     precio DOUBLE PRECISION,
-    material VARCHAR(100),
-    stock BIGINT,
+    material VARCHAR(50),
+    stock INTEGER,
     imagen VARCHAR(50)
 );
 
@@ -66,7 +66,7 @@ CREATE TABLE IF NOT EXISTS categoria (
 
 CREATE TABLE IF NOT EXISTS proveedor (
     id INTEGER, --pk
-    direccion VARCHAR(100),
+    ubicacion VARCHAR(100),
     ruc VARCHAR(50),
     nombre VARCHAR(50),
     email VARCHAR(50),
@@ -103,8 +103,8 @@ CREATE TABLE IF NOT EXISTS contieneP (
 -- Cliente
 ALTER TABLE cliente ADD CONSTRAINT cliente_pk_id PRIMARY KEY (id);
 
--- Direccion
-AlTER TABLE direccion ADD CONSTRAINT direccion_pk_id PRIMARY KEY (id);
+-- Ubicacion
+AlTER TABLE ubicacion ADD CONSTRAINT ubicacion_pk_id PRIMARY KEY (id);
 
 -- Pedido
 ALTER TABLE pedido ADD CONSTRAINT pedido_pk_codigo PRIMARY KEY (codigo);
@@ -136,7 +136,7 @@ ALTER TABLE contieneP ADD CONSTRAINT contieneP_pk_pedidocodigo_productoid PRIMAR
 -- || Foreign Keys ||
 
 -- Cliente
-ALTER TABLE cliente ADD CONSTRAINT direccion_fk_id FOREIGN KEY (direccion_id) REFERENCES direccion(id);
+ALTER TABLE cliente ADD CONSTRAINT ubicacion_fk_id FOREIGN KEY (ubicacion_id) REFERENCES ubicacion(id);
 
 -- Pedido
 ALTER TABLE pedido ADD CONSTRAINT cliente_fk_id FOREIGN KEY (clienteid) REFERENCES cliente(id);
@@ -168,8 +168,8 @@ ALTER TABLE contienep ADD CONSTRAINT producto_fk_id FOREIGN KEY (productoid) REF
 -- Restriccion: Not Null
 
 ALTER TABLE cliente ALTER COLUMN dni SET NOT NULL;
-ALTER TABLE cliente ALTER COLUMN nombres SET NOT NULL;
-ALTER TABLE cliente ALTER COLUMN apellidos SET NOT NULL;
+ALTER TABLE cliente ALTER COLUMN nombre SET NOT NULL;
+ALTER TABLE cliente ALTER COLUMN apellido SET NOT NULL;
 
 ALTER TABLE pedido ALTER COLUMN fecha_entrega SET NOT NULL ;
 ALTER TABLE pedido ALTER COLUMN forma_pago SET NOT NULL ;

@@ -17,6 +17,19 @@ conn.autocommit = True
 def generate_turno(n):
     i = 0
     while i < n:
+        cursor.execute("SELECT dni FROM producto;")
+        descripcion = cursor.fetchall()
+        res = cursor.fetchall()
+        dni = random.choice(res)[0]
+        dia = random.choice(['L', 'M', 'X', 'J', 'V', 'S', 'D'])
+        hora_entrada = random.randint(6, 9)
+        hora_salida = random.randint(18, 24)
+        cursor.execute(f"INSERT INTO producto(, dia, hora_entrada, hora_salida) VALUES ({dni}, {dia}, {hora_entrada}, {hora_salida});")
+        i += 1
+
+def generate_turno(n):
+    i = 0
+    while i < n:
         cursor.execute("SELECT dni FROM trabajador;")
         res = cursor.fetchall()
         dni = random.choice(res)[0]
