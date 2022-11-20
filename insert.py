@@ -25,6 +25,7 @@ def insert_into_table_cliente(n):
     dnis = rd.sample([x for x in range(10000000, 99999999)], 1000)
     cursor.execute("SELECT id FROM ubicacion;")
     ids_ubicacion = cursor.fetchall()
+    emails = ["@gmail.com", "@hotmail.com", "@outlook.com", "@yahoo.com"]
     i = 0
     while (i < n):
         try:
@@ -32,12 +33,15 @@ def insert_into_table_cliente(n):
             dni = str(dnis[i])
             nombre = names.get_first_name()
             apellido = names.get_last_name()
-            email = (nombre[:3] + get_random_string(rd.randint(2,3))+ "." + apellido[:3] + get_random_string(rd.randint(2,3)) + "@gmail.com").lower()
+            email = (nombre[:3]).lower() + get_random_string(rd.randint(2,3))+ "." + apellido[:3].lower() + get_random_string(rd.randint(2,3)) + rd.choice(emails)
             contrasenia = get_random_string(rd.randint(10, 15))
             telefono = rd.randint(100000000, 999999999)        
             fecha_nacimiento = str(datetime.date(rd.randint(1982,2004), rd.randint(1,12), rd.randint(1,28)))
+
             ubicacion_id = int(rd.choice(ids_ubicacion)[0]) 
+            
             cursor.execute(f"INSERT INTO cliente (id, dni, nombre, apellido, email, contrasenia, telefono, fecha_nacimiento, ubicacion_id) VALUES ({id}, '{dni}', '{nombre}', '{apellido}', '{email}', '{contrasenia}', {telefono}, '{fecha_nacimiento}', {ubicacion_id});")
+
             i += 1
         except Exception as e:
             print(e, i)
@@ -69,24 +73,80 @@ def insert_into_table_pedido(n):
 def update_table_pedido():
     # antes de actualizar la tabla pedido, se tiene que insetar las tuplas en la tabla contieneP
     # el triggers actualiza el monto total
-    cursor.execute("SELECT codigo FROM pedido;")
-    codigos_pedido = cursor.fetchall()
+    cursor.execute(f"SELECT pedidocodigo, SUM(subtotal) FROM contienep GROUP BY pedidocodigo;")
+    lista = cursor.fetchall()
     i = 0
-    while (i < len(codigos_pedido)):
+    
+    while (i < len(lista)):
         try:
-            cursor.execute(f"SELECT monto_total FROM pedido WHERE codigo = {codigos_pedido[i]};")
-            monto_total = float(cursor.fetchone())
-            if (monto_total > 0):
+            #codigos_p = codigos_pedido[i][0]
+            #cursor.execute(f"SELECT monto_total FROM pedido WHERE codigo='{codigos_p}';")
+            pedidocodigo = lista[i][0]
+            monto_total = lista[i][1]
+            #print(lista)
+            #print(monto_total)
+            #if (monto_total == 0):
                 # crear un tigger que calcule eso - la suma de todos los costos* cantidad de cada producto y descuente el monto total
-                costo_envio = monto_total * rd.uniform(0.05, 0.2)
-                impuesto_total = monto_total * rd.uniform(0.1, 0.2)           
-                descuento_total = rd.uniform(monto_total * 0.1, monto_total * 0.3)
-                monto_total = monto_total + costo_envio + impuesto_total - descuento_total
-                cursor.execute(f"UPDATE pedido SET monto_total = {monto_total}, costo_envio = {costo_envio}, impuesto_total = {impuesto_total}, descuento_total = {descuento_total} WHERE codigo = '{codigos_pedido[i]}';")
-            else:
-                cursor.execute(f"DELETE FROM pedido WHERE codigo ='{codigos_pedido[i]}';")
+            costo_envio = round(monto_total * rd.uniform(0.05, 0.2), 2)
+            impuesto_total = round(monto_total * rd.uniform(0.1, 0.2), 2)           
+            descuento_total = round(rd.uniform(monto_total * 0.1, monto_total * 0.3), 2)
+            monto_total = round(monto_total + costo_envio + impuesto_total - descuento_total, 2)
+                #print(type(codigos_p))
+            cursor.execute(f"UPDATE pedido SET monto_total = {monto_total}, costo_envio = {costo_envio}, impuesto_total = {impuesto_total}, descuento_total = {descuento_total} WHERE codigo = '{pedidocodigo}';")
+            #else:
+                #cursor.execute(f"DELETE FROM pedido WHERE codigo ='{codigos_p}';")
             i += 1
         except Exception as e:
             print(e, i)
 
-insert_into_table_pedido(1000)
+#insert_into_table_pedido(1000)
+
+def insert_into_table_comentarioProducto(n):
+    ids = rd.sample([x for x in range(10000000, 99999999)], 1000)
+    cursor.execute("SELECT id FROM cliente;")
+    ids_cliente = cursor.fetchall()
+    cursor.execute("SELECT id FROM producto;")
+    ids_producto = cursor.fetchall()
+    i = 0
+    while i < n:
+        try:
+            id = ids[i]
+            clienteid = rd.choice(ids_cliente)[0]
+            fecha = str(radar.random_datetime(start = datetime.date.fromisoformat('2019-04-11'), stop = datetime.date(year=2022, month=11, day=20)))
+            texto = get_random_text(50)
+            idioma = rd.choice(['Spanish', 'English'])
+            productoid = rd.choice(ids_producto)[0]
+            cursor.execute(f"INSERT INTO comentarioproducto (id, clienteid, fecha, texto, idioma, productoid) VALUES ({id}, {clienteid}, '{fecha}', '{texto}', '{idioma}', {productoid});")
+            i += 1
+        except Exception as e:
+            print(e, i)
+
+
+def insert_into_table_contieneP(n):
+    cursor.execute("SELECT id FROM producto;")
+    producto_id = cursor.fetchall()
+    cursor.execute("SELECT codigo FROM pedido;")
+    codigo_pedido = cursor.fetchall()
+    codigo_pedido = [x[0] for x in codigo_pedido]
+    codigo_pedido = codigo_pedido + codigo_pedido + random.choices(codigo_pedido, k = n-(2*len(codigo_pedido))) 
+    #print(codigo_pedido)
+    i = 0
+    while(i < n):
+        try:
+            pedidocodigo = codigo_pedido[i] 
+            productoid = rd.choice(producto_id)[0] 
+            cursor.execute(f"SELECT precio FROM producto WHERE id={productoid};") 
+            precio_producto_by_id = cursor.fetchone()
+            descuentoproducto = round(rd.uniform(precio_producto_by_id[0] * 0.05, precio_producto_by_id[0] * 0.1), 2)
+            cantidad = rd.randint(1, 20);
+            subtotal = round((precio_producto_by_id[0] - descuentoproducto) * cantidad, 2)
+            cursor.execute(f"INSERT INTO contienep(productoid, pedidocodigo, subtotal, cantidad, descuentoproducto) VALUES({productoid}, '{pedidocodigo}', {subtotal}, {cantidad}, {descuentoproducto});")
+            i += 1;
+        except Exception as e:
+            print(e, i)
+
+#insert_into_table_contieneP(1500)
+#insert_into_table_contieneP(2000)
+update_table_pedido()
+#insert_into_table_contieneP(1500)
+# insert_into_table_pedido(500)
