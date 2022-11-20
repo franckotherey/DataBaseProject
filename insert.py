@@ -145,6 +145,28 @@ def insert_into_table_contieneP(n):
         except Exception as e:
             print(e, i)
 
+def insert_into_table_producto(n):
+    ids = rd.sample([x for x in range(10000000, 99999999)], n)
+    marcas = ["Speackers", "Renzo Costa", "Win Sports", "Capittana", "Lalalove", "Butrich", "Nebula", "Camote Soup", "Agua Clara", "Peruvian Flake", "Quimera", "Sophie", "Crown", "Ayni", "Adidas", "Nike", "Burberry", "Dolce & Gabbana", "Valentino", "Givenchy", "Balenciaga", "Prada", "Versace", "Gucci", "Christian Dior", "Baiter"]
+    materiales = ["Algodon", "Poliester", "Lino", "Lana", "Seda", "Nylon", "Lycra", "Cuero", "Fibras sinteticas", "Popelin", "Tejidos mixtos", "Kashmir"]
+    i = 0
+    while (i < n):
+        try:
+            id = ids[i]
+            descripcion = get_random_text_min_max(40, 60)
+            sku = get_random_code(8)
+            marca = rd.choice(marcas)
+            talla = str(rd.randint(20, 89))
+            nombre = get_random_text(15, 25) 
+            precio = round(rd.uniform(30.5, 800.5), 2)
+            material = rd.choice(materiales)
+            stock = rd.randint(5, 150)
+            imagen = get_random_string(30, 40)
+            cursor.execute(f"INSERT INTO producto(id, descripcion, sku, marca, talla, nombre, precio, material, stock, imagen) VALUES({id}, '{descripcion}', '{sku}', '{marca}', '{talla}', '{nombre}', {precio}, '{material}', {stock}, '{imagen}');")
+        except Exception as e:
+            print(e, i)
+
+
 #insert_into_table_contieneP(1500)
 #insert_into_table_contieneP(2000)
 update_table_pedido()
